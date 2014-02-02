@@ -41,56 +41,30 @@ public class QryopOr extends Qryop {
 			impliedQryOp = new QryopScore(args.get(i));
 			QryResult iResult = impliedQryOp.evaluate();
 
-			if (QryParams.retrievalAlgm == RetrievalAlgorithm.UNRANKEDBOOLEAN){
-				
-			}
 			int iSize = iResult.docScores.scores.size();
-			for (int j = 0; j < iSize; i++){
-				int iDocID = iResult.docScores.getDocid(j);
-				
-			}
-			// Use the results of the i'th argument to incrementally compute
-			// the query operator. Intersection-style query operators
-			// iterate over the incremental results, not the results of the
-			// i'th query argument.
-			int rDoc = 0; /* Index of a document in result. */
-			int iDoc = 0; /* Index of a document in iResult. */
-
-			while (rDoc < result.docScores.scores.size()) {
-
-				// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
-				// Unranked Boolean AND. Remove from the incremental result
-				// any documents that weren't returned by the i'th query
-				// argument.
-
-				// Ignore documents matched only by the i'th query arg.
-				while ((iDoc < iResult.docScores.scores.size())
-						&& (result.docScores.getDocid(rDoc) > iResult.docScores
-								.getDocid(iDoc))) {
-					iDoc++;
+			if (QryParams.retrievalAlgm == RetrievalAlgorithm.UNRANKEDBOOLEAN){
+				for (int j = 0; j < iSize; j++) {
+					int iDocID = iResult.docScores.getDocid(j);
+					if (result.docScores.containsDocID(iDocID) < 0)
+						result.docScores.add(iDocID, (float) 1.0);
 				}
-
-				// If the rDoc document appears in both lists, keep it,
-				// otherwise discard it.
-				if ((iDoc < iResult.docScores.scores.size())
-						&& (result.docScores.getDocid(rDoc) == iResult.docScores
-								.getDocid(iDoc))) {
-
-					if (QryParams.retrievalAlgm == RetrievalAlgorithm.UNRANKEDBOOLEAN) {
-
-					} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.RANKEDBOOLEAN) {
-						float newScore = Math.min(
-								result.docScores.getDocidScore(rDoc),
-								iResult.docScores.getDocidScore(iDoc));
-						result.docScores.setScoreByIndex(rDoc, newScore);
+			} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.RANKEDBOOLEAN) {
+				for (int j = 0; j < iSize; j++) {
+					int iDocID = iResult.docScores.getDocid(j);
+					int idx = result.docScores.containsDocID(iDocID);
+					if (idx < 0) { 
+						result.docScores.add(iDocID, iResult.docScores.getDocidScore(j));
+					} else {
+						result.docScores.setScoreByIndex(idx, 
+								Math.max(result.docScores.getDocidScore(idx), 
+										iResult.docScores.getDocidScore(j)));;
 					}
-					rDoc++;
-					iDoc++;
-				} else {
-					result.docScores.scores.remove(rDoc);
+						
 				}
 			}
 		}
+		
+		result.docScores.sortScoresByDocID();
 
 		return result;
 	}

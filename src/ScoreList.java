@@ -32,6 +32,10 @@ public class ScoreList {
   public void add(int docid, float score) {
     scores.add(new ScoreListEntry(docid, score));
   }
+  
+  public void insert(int docid, float score, int pos) {
+	  scores.add(pos, new ScoreListEntry(docid, score));
+  }
 
   public int getDocid(int n) {
     return this.scores.get(n).docid;
@@ -39,6 +43,16 @@ public class ScoreList {
 
   public float getDocidScore(int n) {
     return this.scores.get(n).score;
+  }
+  
+  public int containsDocID(int docid) {
+	  int size = scores.size();
+	  for (int i = 0; i < size; i++){
+		  if (scores.get(i).docid == docid)
+			  return i;
+	  }
+	  
+	  return -1;
   }
   
   /**
@@ -50,7 +64,7 @@ public class ScoreList {
 	  this.scores.get(n).score = score;
   }
   
-  public void sortScores() {
+  public void sortScoresByScore() {
 	  Collections.sort(scores, new Comparator<ScoreListEntry>() {
 		 public int compare(ScoreListEntry s1, ScoreListEntry s2) {
 			 if (s1.score != s2.score){
@@ -65,6 +79,14 @@ public class ScoreList {
 				 }
 			 }
 		 }
+	  });
+  }
+  
+  public void sortScoresByDocID() {
+	  Collections.sort(scores, new Comparator<ScoreListEntry>() {
+		  public int compare(ScoreListEntry s1, ScoreListEntry s2) {
+			  return s1.docid - s2.docid;
+		  }
 	  });
   }
 

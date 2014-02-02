@@ -93,7 +93,7 @@ public class QryEval {
 			Qryop qTree = QryParser.parseQuery(qry);
 			result = qTree.evaluate();
 			
-			result.docScores.sortScores();
+			result.docScores.sortScoresByScore();
 			printResults(qID.toString(), result);
 		}
 
