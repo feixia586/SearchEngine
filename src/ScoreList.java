@@ -50,7 +50,7 @@ public class ScoreList {
 	  this.scores.get(n).score = score;
   }
   
-  public void sort() {
+  public void sortScores() {
 	  Collections.sort(scores, new Comparator<ScoreListEntry>() {
 		 public int compare(ScoreListEntry s1, ScoreListEntry s2) {
 			 if (s1.score != s2.score){
