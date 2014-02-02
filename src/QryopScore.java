@@ -2,6 +2,7 @@
  *  Copyright (c) 2013, Carnegie Mellon University.  All Rights Reserved.
  */
 
+
 import java.io.IOException;
 
 public class QryopScore extends Qryop {

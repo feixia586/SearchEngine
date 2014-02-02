@@ -120,6 +120,7 @@ public class QryEval {
 		
 		return queries;
 	}
+	
 
 	/**
 	 * Get the external document id for a document specified by an internal

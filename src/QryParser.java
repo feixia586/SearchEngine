@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.StringTokenizer;
@@ -29,6 +30,8 @@ public class QryParser {
 		if (qString.charAt(0) != '#') {
 			qString = "#and(" + qString + ")";
 		}
+		
+		qString = "#score(" + qString + ")";
 
 		/*
 		 * Tokenize the query.
@@ -48,11 +51,18 @@ public class QryParser {
 
 			if (token.matches("[ ,(\t\n\r]")) // Ignore most delimiters.
 				;
-			else if (token.equalsIgnoreCase("#and")) {
+			else if (token.equalsIgnoreCase("#score")) {
+				currentOp = new QryopScore();
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#and")) {
 				currentOp = new QryopAnd();
 				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#or")) {
 				currentOp = new QryopOr();
+				stack.push(currentOp);
+			} else if (token.matches("#[nN][eE][aA][rR]/\\d+")) {
+				String[] parts = token.split("/"); 
+				currentOp = new QryopNear(Integer.parseInt(parts[1]));
 				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#syn")) {
 				currentOp = new QryopSyn();
