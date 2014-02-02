@@ -1,6 +1,9 @@
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.StringTokenizer;
 import java.util.Stack;
+
+
 
 public class QryParser {
 	/**
@@ -74,7 +77,23 @@ public class QryParser {
 				// NOTE: You should do lexical processing of the token before
 				// creating the query term, and you should check to see whether
 				// the token specifies a particular field (e.g., apple.title).
-				currentOp.add(new QryopTerm(token));
+				
+				// do field identification and lexical processing
+				int idx = token.lastIndexOf('.');
+				String field = null;
+				if (idx >= 0) {
+					field = token.substring(idx+1);
+					token = token.substring(0, idx);
+				}
+				String[] word = QryEval.tokenizeQuery(token); 
+				if (word.length == 0) continue;		// stop words
+
+				// add term
+				if (idx >= 0) { 
+					currentOp.add(new QryopTerm(word[0], field));
+				} else {
+					currentOp.add(new QryopTerm(word[0]));
+				}
 			}
 			;
 		}
@@ -91,4 +110,5 @@ public class QryParser {
 
 		return currentOp;
 	}
+	
 }

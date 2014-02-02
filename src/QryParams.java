@@ -3,11 +3,16 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.*;
 
+enum RetrievalAlgorithm {
+	UNRANKEDBOOLEAN, RANKEDBOOLEAN
+}
+
 public class QryParams {
+
 	public static String queryFilePath;
 	public static String indexPath;
 	public static String trecEvalOutPath;
-	public static String retrievalAlgm;
+	public static RetrievalAlgorithm retrievalAlgm;
 
 	public static void parseParameterFile(String filePath) {
 		// read in the parameter file; one parameter per line in format of
@@ -29,16 +34,25 @@ public class QryParams {
 		}
 
 		// parameters required for this example to run
-		if (!params.containsKey("queryFilePath") || !params.containsKey("indexPath") 
-				|| !params.containsKey("trecEvalOutputPath") || !params.containsKey("retrievalAlgorithm")) {
+		if (!params.containsKey("queryFilePath")
+				|| !params.containsKey("indexPath")
+				|| !params.containsKey("trecEvalOutputPath")
+				|| !params.containsKey("retrievalAlgorithm")) {
 			System.err.println("Error: Parameters were missing.");
 			System.exit(1);
 		}
-		
+
 		// store the parameters in static variables
 		queryFilePath = params.get("queryFilePath");
 		indexPath = params.get("indexPath");
 		trecEvalOutPath = params.get("trecEvalOutputPath");
-		retrievalAlgm = params.get("retrievalAlgorithm");
+		if (params.get("retrievalAlgorithm").equals("UnrankedBoolean"))
+			retrievalAlgm = RetrievalAlgorithm.UNRANKEDBOOLEAN;
+		else if (params.get("retrievalAlgorithm").equals("RankedBoolean"))
+			retrievalAlgm = RetrievalAlgorithm.RANKEDBOOLEAN;
+		else {
+			System.err.println("Error: unidentified retrieval algorithm.");
+			System.exit(1);
+		}
 	}
 }
