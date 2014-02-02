@@ -51,6 +51,9 @@ public class QryParser {
 			else if (token.equalsIgnoreCase("#and")) {
 				currentOp = new QryopAnd();
 				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#or")) {
+				currentOp = new QryopOr();
+				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#syn")) {
 				currentOp = new QryopSyn();
 				stack.push(currentOp);
