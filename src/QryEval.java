@@ -53,6 +53,8 @@ public class QryEval {
 		analyzer.setStopwordRemoval(true);
 		analyzer.setStemmer(EnglishAnalyzerConfigurable.StemmerType.KSTEM);
 	}
+	
+	private static StringBuilder resStrBld = new StringBuilder();
 
 	/**
 	 * @param args
@@ -84,7 +86,7 @@ public class QryEval {
 		Map<Integer, String> queries = getQueries(QryParams.queryFilePath);
 		List<Integer> sortedQueryID = new ArrayList<Integer>(queries.keySet());
 		Collections.sort(sortedQueryID);
-		
+
 		// search!!!
 		for (Integer qID : sortedQueryID) {
 			QryResult result;
@@ -92,10 +94,11 @@ public class QryEval {
 			String qry = queries.get(qID);
 			Qryop qTree = QryParser.parseQuery(qry);
 			result = qTree.evaluate();
-			
+
 			result.docScores.sortScoresByScore();
 			printResults(qID.toString(), result);
 		}
+		FileOp.writeToFile(QryParams.trecEvalOutPath, resStrBld.toString());
 
 	}
 
@@ -111,16 +114,15 @@ public class QryEval {
 				String queryContent = line.substring(index + 1);
 				queries.put(queryID, queryContent);
 			} while (scan.hasNext());
-			
+
 			scan.close();
 		} catch (FileNotFoundException ex) {
 			System.err.println("Error: cannot open file: " + queryFilePath);
 			System.exit(1);
 		}
-		
+
 		return queries;
 	}
-	
 
 	/**
 	 * Get the external document id for a document specified by an internal
@@ -144,8 +146,6 @@ public class QryEval {
 		return (eid);
 	}
 
-	
-
 	/**
 	 * Print the query results.
 	 * 
@@ -168,14 +168,20 @@ public class QryEval {
 			System.out.println(queryID + "\tQ0\tdummy\t1\t0\trun-1");
 		} else {
 			for (int i = 0; i < result.docScores.scores.size(); i++) {
-				System.out.println(queryID + "\tQ0\t" 
-						+ getExternalDocid(result.docScores.getDocid(i))
-						+ "\t" + (i+1) + "\t" + result.docScores.getDocidScore(i)
-						+ "\trun-1");
+				//if (i >= 100)
+				//	break;
+				
+				StringBuilder strBld = new StringBuilder(queryID);
+				strBld.append("\tQ0\t")
+						.append(getExternalDocid(result.docScores.getDocid(i)))
+						.append("\t").append((i + 1)).append("\t")
+						.append(result.docScores.getDocidScore(i))
+						.append("\trun-1");
+				resStrBld.append(strBld).append("\r\n");
+				System.out.println(strBld.toString());
 			}
 		}
 	}
-
 
 	/**
 	 * Given a query string, returns the terms one at a time with stopwords
