@@ -61,8 +61,11 @@ public class QryopNear extends Qryop {
 							if (rIdx + 1 < rPost.positions.size()) {
 								int new_rloc = rPost.positions.get(rIdx + 1);
 								if (new_rloc <= iloc
-										&& (iloc - new_rloc <= dist))
+										&& (iloc - new_rloc <= dist)) {
 									rIdx++;
+								} else {
+									iIdx++;
+								}
 							} else {
 								iIdx++;
 							}

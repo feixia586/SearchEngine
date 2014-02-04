@@ -28,7 +28,7 @@ public class QryParser {
 		qString = qString.trim();
 
 		if (qString.charAt(0) != '#') {
-			qString = "#and(" + qString + ")";
+			qString = "#or(" + qString + ")";
 		}
 		
 		qString = "#score(" + qString + ")";

@@ -87,6 +87,7 @@ public class QryEval {
 		List<Integer> sortedQueryID = new ArrayList<Integer>(queries.keySet());
 		Collections.sort(sortedQueryID);
 
+		long startTime = System.currentTimeMillis();
 		// search!!!
 		for (Integer qID : sortedQueryID) {
 			QryResult result;
@@ -99,6 +100,10 @@ public class QryEval {
 			printResults(qID.toString(), result);
 		}
 		FileOp.writeToFile(QryParams.trecEvalOutPath, resStrBld.toString());
+		
+		long endTime = System.currentTimeMillis();
+		long totalTime = endTime - startTime;
+		System.out.println(totalTime);
 
 	}
 
@@ -168,8 +173,8 @@ public class QryEval {
 			System.out.println(queryID + "\tQ0\tdummy\t1\t0\trun-1");
 		} else {
 			for (int i = 0; i < result.docScores.scores.size(); i++) {
-				//if (i >= 100)
-				//	break;
+				if (i >= 100)
+					break;
 				
 				StringBuilder strBld = new StringBuilder(queryID);
 				strBld.append("\tQ0\t")
