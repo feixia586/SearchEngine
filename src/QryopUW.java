@@ -1,7 +1,7 @@
 import java.io.IOException;
 
 
-public class QryopUW {
+public class QryopUW extends Qryop{
 	private int dist;
 	
 	public QryopUW(int dist, Qryop... q) {
@@ -17,7 +17,7 @@ public class QryopUW {
 	}
 	
 	public QryResult evaluate() throws IOException {
-		
+		return null;
 	}
 }
 

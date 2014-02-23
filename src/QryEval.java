@@ -54,7 +54,10 @@ public class QryEval {
 		analyzer.setStemmer(EnglishAnalyzerConfigurable.StemmerType.KSTEM);
 	}
 	
+	public static DocLengthStore dls;
+	
 	private static StringBuilder resStrBld = new StringBuilder();
+
 
 	/**
 	 * @param args
@@ -81,6 +84,7 @@ public class QryEval {
 			System.err.println(usage);
 			System.exit(1);
 		}
+		dls = new DocLengthStore(READER);
 
 		// read query file
 		Map<Integer, String> queries = getQueries(QryParams.queryFilePath);
@@ -103,7 +107,7 @@ public class QryEval {
 		
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println(totalTime);
+		//System.out.println(totalTime);
 
 	}
 

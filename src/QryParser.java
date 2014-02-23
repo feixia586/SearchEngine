@@ -1,10 +1,9 @@
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.StringTokenizer;
 import java.util.Stack;
 
-
+import org.apache.lucene.queryparser.surround.query.AndQuery;
 
 public class QryParser {
 	/**
@@ -27,10 +26,22 @@ public class QryParser {
 		 */
 		qString = qString.trim();
 
-		if (qString.charAt(0) != '#') {
-			qString = "#or(" + qString + ")";
+		// preprocess the query
+		if (QryParams.retrievalAlgm == RetrievalAlgorithm.BM25) {
+			if (qString.length() <= 4
+					|| !qString.substring(0, 4).equalsIgnoreCase("#sum"))
+				qString = "#sum(" + qString + ")";
+
+		} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI) {
+			if (qString.length() <= 4
+					|| !qString.substring(0, 4).equalsIgnoreCase("#and"))
+				qString = "#and(" + qString + ")";
+
+		} else {
+			if (qString.charAt(0) != '#')
+				qString = "#or(" + qString + ")";
 		}
-		
+
 		qString = "#score(" + qString + ")";
 
 		/*
@@ -54,6 +65,9 @@ public class QryParser {
 			else if (token.equalsIgnoreCase("#score")) {
 				currentOp = new QryopScore();
 				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#sum")) {
+				currentOp = new QryopBM25Sum();
+				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#and")) {
 				currentOp = new QryopAnd();
 				stack.push(currentOp);
@@ -61,11 +75,17 @@ public class QryParser {
 				currentOp = new QryopOr();
 				stack.push(currentOp);
 			} else if (token.matches("#[nN][eE][aA][rR]/\\d+")) {
-				String[] parts = token.split("/"); 
+				String[] parts = token.split("/");
 				currentOp = new QryopNear(Integer.parseInt(parts[1]));
 				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#syn")) {
 				currentOp = new QryopSyn();
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#weight")) {
+				currentOp = new QryopWeight();
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#wsum")){
+				currentOp = new QryopWSUM();
 				stack.push(currentOp);
 			} else if (token.startsWith(")")) { // Finish current query
 												// operator.
@@ -86,23 +106,40 @@ public class QryParser {
 				currentOp = stack.peek();
 				currentOp.add(arg);
 			} else {
+				
+				if (currentOp instanceof QryopWeight){
+					try {
+						double weight = Double.parseDouble(token);
+						((QryopWeight) currentOp).add_weight(weight);
+						continue;
+					} catch(NumberFormatException exp) {
+					}
+				} else if (currentOp instanceof QryopWSUM) {
+					try {
+						double weight = Double.parseDouble(token);
+						((QryopWSUM) currentOp).add_weight(weight);
+						continue;
+					} catch(NumberFormatException exp) {
+					}
+				}
 
 				// NOTE: You should do lexical processing of the token before
 				// creating the query term, and you should check to see whether
 				// the token specifies a particular field (e.g., apple.title).
-				
+
 				// do field identification and lexical processing
 				int idx = token.lastIndexOf('.');
 				String field = null;
 				if (idx >= 0) {
-					field = token.substring(idx+1);
+					field = token.substring(idx + 1);
 					token = token.substring(0, idx);
 				}
-				String[] word = QryEval.tokenizeQuery(token); 
-				if (word.length == 0) continue;		// stop words
+				String[] word = QryEval.tokenizeQuery(token);
+				if (word.length == 0)
+					continue; // stop words
 
 				// add term
-				if (idx >= 0) { 
+				if (idx >= 0) {
 					currentOp.add(new QryopTerm(word[0], field));
 				} else {
 					currentOp.add(new QryopTerm(word[0]));
@@ -123,5 +160,5 @@ public class QryParser {
 
 		return currentOp;
 	}
-	
+
 }

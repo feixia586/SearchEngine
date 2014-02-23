@@ -31,6 +31,7 @@ public class QryopNear extends Qryop {
 			QryResult iResult = args.get(i).evaluate();
 
 			QryResult crntResult = new QryResult();
+			crntResult.invertedList.field = result.invertedList.field;
 			int rDoc = 0, iDoc = 0;
 			while (rDoc < result.invertedList.df
 					&& iDoc < iResult.invertedList.df) {

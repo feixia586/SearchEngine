@@ -27,6 +27,12 @@ public class QryopOr extends Qryop {
 	 */
 	public QryResult evaluate() throws IOException {
 
+		if (QryParams.retrievalAlgm != RetrievalAlgorithm.RANKEDBOOLEAN
+				&& QryParams.retrievalAlgm != RetrievalAlgorithm.UNRANKEDBOOLEAN) {
+			System.err.println("Error: invalid #or in this alg!");
+			System.exit(-1);
+		}
+
 		// Seed the result list by evaluating the first query
 		// argument. The result could be docScores or invList, depending
 		// on the query operator. Wrap a SCORE query operator around it to
@@ -34,37 +40,6 @@ public class QryopOr extends Qryop {
 		// to do this. This approach is just easy to see and understand.
 		Qryop impliedQryOp = new QryopScore(args.get(0));
 		QryResult result = impliedQryOp.evaluate();
-
-		// Each pass of the loop evaluates one query argument.
-//		for (int i = 1; i < args.size(); i++) {
-//
-//			impliedQryOp = new QryopScore(args.get(i));
-//			QryResult iResult = impliedQryOp.evaluate();
-//
-//			int iSize = iResult.docScores.scores.size();
-//			if (QryParams.retrievalAlgm == RetrievalAlgorithm.UNRANKEDBOOLEAN) {
-//				for (int j = 0; j < iSize; j++) {
-//					int iDocID = iResult.docScores.getDocid(j);
-//					if (result.docScores.containsDocID(iDocID) < 0)
-//						result.docScores.add(iDocID, (float) 1.0);
-//				}
-//			} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.RANKEDBOOLEAN) {
-//				for (int j = 0; j < iSize; j++) {
-//					int iDocID = iResult.docScores.getDocid(j);
-//					int idx = result.docScores.containsDocID(iDocID);
-//					if (idx < 0) {
-//						result.docScores.add(iDocID,
-//								iResult.docScores.getDocidScore(j));
-//					} else {
-//						result.docScores.setScoreByIndex(idx, Math.max(
-//								result.docScores.getDocidScore(idx),
-//								iResult.docScores.getDocidScore(j)));
-//						;
-//					}
-//
-//				}
-//			}
-//		}
 
 		for (int i = 1; i < args.size(); i++) {
 			impliedQryOp = new QryopScore(args.get(i));
@@ -108,11 +83,9 @@ public class QryopOr extends Qryop {
 					iDoc++;
 				}
 			}
-			
+
 			result = crntResult;
 		}
-
-		//result.docScores.sortScoresByDocID();
 
 		return result;
 	}

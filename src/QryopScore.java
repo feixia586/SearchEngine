@@ -2,7 +2,6 @@
  *  Copyright (c) 2013, Carnegie Mellon University.  All Rights Reserved.
  */
 
-
 import java.io.IOException;
 
 public class QryopScore extends Qryop {
@@ -50,9 +49,69 @@ public class QryopScore extends Qryop {
 						(float) 1.0);
 			}
 		} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.RANKEDBOOLEAN) {
-			for (int i = 0; i < result.invertedList.df; i++){
+			for (int i = 0; i < result.invertedList.df; i++) {
 				result.docScores.add(result.invertedList.postings.get(i).docid,
 						result.invertedList.postings.get(i).tf);
+			}
+		} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.BM25) {
+			String field = result.invertedList.field;
+			int N = QryEval.READER.getDocCount(field);
+			int df = result.invertedList.df;
+			int qtf = 1;
+			double avg_doclen = QryEval.READER.getSumTotalTermFreq(field)
+					/ (double) N;
+			double idf = Math.log((N - df + 0.5) / (df + 0.5));
+			double user_weights = (QryParams.BM25_k3 + 1) * qtf
+					/ (double) (QryParams.BM25_k3 + qtf);
+			for (int i = 0; i < df; i++) {
+				DocPosting posting = result.invertedList.postings.get(i);
+				int tf = posting.tf;
+				long doclen = QryEval.dls.getDocLength(field, posting.docid);
+				double final_tf = tf
+						/ (double) (tf + QryParams.BM25_k1
+								* (1 - QryParams.BM25_b + QryParams.BM25_b
+										* doclen / avg_doclen));
+				double doc_score = idf * final_tf * user_weights;
+				result.docScores.add(posting.docid, (float) doc_score);
+			}
+
+		} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI) {
+			String field = result.invertedList.field;
+
+			double smo = 0;
+			if (QryParams.Indri_smo == SmoothTech.DF) {
+				int df = result.invertedList.df;
+				int len_docs = QryEval.READER.getDocCount(field);
+				smo = df / (double) len_docs;
+			} else if (QryParams.Indri_smo == SmoothTech.CTF) {
+				int ctf = result.invertedList.ctf;
+				long len_terms = QryEval.READER.getSumTotalTermFreq(field);
+				smo = ctf / (double) len_terms;
+			} else {
+				System.err.println("Error: param Indri_smo invalid!");
+				System.exit(1);
+			}
+
+			int df = result.invertedList.df;
+			// actually, doc_num = QryEval.READER.getDocCount(field);
+			int doc_num = QryEval.READER.numDocs();
+			int id = 0, p = 0;
+			while (id < doc_num || p < df) {
+				if (p < df) {
+					DocPosting post = result.invertedList.postings.get(p);
+					int pid = post.docid;
+					if (id == pid) {
+						long doc_len = QryEval.dls.getDocLength(field, id);
+						float score = calc_score(post.tf, smo, doc_len);
+						result.docScores.add(id, score);
+						p++; id++;
+						continue;
+					}
+				}
+				
+				float score = calc_score(0, smo, QryEval.dls.getDocLength(field, id));
+				result.docScores.add(id, score);
+				id++;
 			}
 		}
 
@@ -62,5 +121,13 @@ public class QryopScore extends Qryop {
 			result.invertedList = new InvList();
 
 		return result;
+	}
+
+	public float calc_score(int tf, double smo, long doc_len) {
+		double part1 = (QryParams.Indri_lambda * (tf + QryParams.Indri_mu * smo)
+				/ (doc_len + QryParams.Indri_mu));
+		double part2 = ((1 - QryParams.Indri_lambda) * smo); 
+		float res = (float) Math.log(part1 + part2);
+		return res;
 	}
 }

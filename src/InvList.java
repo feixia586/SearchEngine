@@ -17,6 +17,7 @@ public class InvList {
 	public int ctf = 0;
 	public int df = 0;
 	public Vector<DocPosting> postings = new Vector<DocPosting>();
+	public String field = "body";
 
 	/**
 	 * An empty inverted list. Useful for some query operators.
@@ -28,6 +29,7 @@ public class InvList {
 	 * Fetch the inverted list from the index.
 	 */
 	public InvList(String termString, String fieldString) throws IOException {
+		this.field = fieldString;
 
 		// Prepare to access the index.
 		BytesRef termBytes = new BytesRef(termString);
