@@ -46,11 +46,11 @@ public class QryopNear extends Qryop {
 					DocPosting iPost = iResult.invertedList.postings.get(iDoc);
 					DocPosting posting = new DocPosting(
 							result.invertedList.getDocIDByIndex(rDoc));
-					if (i >= 2) {
-						posting.tf = rPost.tf; // this tf represents score!!!
-					}
+					//if (i >= 2) {
+					//	posting.tf = rPost.tf; // this tf represents score!!!
+					//}
 					int rIdx = 0, iIdx = 0;
-					while (rIdx < rPost.positions.size() && iIdx < iPost.tf) {
+					while (rIdx < rPost.positions.size() && iIdx < iPost.positions.size()) {
 						int rloc = rPost.positions.get(rIdx);
 						int iloc = iPost.positions.get(iIdx);
 						if (rloc > iloc) {
