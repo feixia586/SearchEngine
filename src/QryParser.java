@@ -78,6 +78,10 @@ public class QryParser {
 				String[] parts = token.split("/");
 				currentOp = new QryopNear(Integer.parseInt(parts[1]));
 				stack.push(currentOp);
+			} else if (token.matches("#[uU][wW]/\\d+")) {
+				String[] parts = token.split("/");
+				currentOp = new QryopUW(Integer.parseInt(parts[1]));
+				stack.push(currentOp);
 			} else if (token.equalsIgnoreCase("#syn")) {
 				currentOp = new QryopSyn();
 				stack.push(currentOp);
