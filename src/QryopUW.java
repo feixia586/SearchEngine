@@ -64,7 +64,8 @@ public class QryopUW extends Qryop {
 				DocPosting posting = new DocPosting(maxDocID);
 				
 				while (true) {
-					int min_loc = 0, max_loc = 0;
+					int min_loc = posts.get(0).positions.get(locIdxs.get(0));
+					int	max_loc = posts.get(0).positions.get(locIdxs.get(0));
 					int MINL_argIdx = 0;
 					for (int i = 0; i < args.size(); i++) {
 						int crnt_loc = posts.get(i).positions.get(locIdxs.get(i));
@@ -157,6 +158,6 @@ public class QryopUW extends Qryop {
 			docIdxs.set(i, new_val);
 		}
 		
-		return false;
+		return true;
 	}
 }
