@@ -11,7 +11,8 @@ public class QryopBM25Sum extends Qryop {
 	}
 
 	public QryResult evaluate() throws IOException {
-		QryResult result = args.get(0).evaluate();
+		Qryop impliedQryop = new QryopScore(args.get(0));
+		QryResult result = impliedQryop.evaluate();
 		
 		if (QryParams.retrievalAlgm != RetrievalAlgorithm.BM25) {
 			System.err.println("Error: invaild #sum in this alg!");
@@ -19,7 +20,8 @@ public class QryopBM25Sum extends Qryop {
 		}
 
 		for (int i = 0; i < args.size(); i++) {
-			QryResult iResult = args.get(i).evaluate();
+			impliedQryop = new QryopScore(args.get(i));
+			QryResult iResult = impliedQryop.evaluate();
 
 			QryResult crntResult = new QryResult();
 			int rDoc = 0, iDoc = 0;

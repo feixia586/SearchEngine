@@ -40,9 +40,10 @@ public class QryParser {
 		} else {
 			if (qString.charAt(0) != '#')
 				qString = "#or(" + qString + ")";
+
+			qString = "#score(" + qString + ")";
 		}
 
-		qString = "#score(" + qString + ")";
 
 		/*
 		 * Tokenize the query.
