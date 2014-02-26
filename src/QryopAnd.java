@@ -29,6 +29,8 @@ public class QryopAnd extends Qryop {
 	 * Evaluate the query operator.
 	 */
 	public QryResult evaluate() throws IOException {
+
+		// if retrieval algorithm is Indri, go directly to the Indri evaluation
 		if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI) {
 			return eval_Indri();
 		}
@@ -77,6 +79,7 @@ public class QryopAnd extends Qryop {
 					if (QryParams.retrievalAlgm == RetrievalAlgorithm.UNRANKEDBOOLEAN) {
 
 					} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.RANKEDBOOLEAN) {
+						// find out the min score
 						float newScore = Math.min(
 								result.docScores.getDocidScore(rDoc),
 								iResult.docScores.getDocidScore(iDoc));
@@ -109,9 +112,9 @@ public class QryopAnd extends Qryop {
 		for (int id = 0; id < doc_num; id++) {
 			double tmp = 0;
 			for (int idx = 0; idx < resList.size(); idx++) {
-				tmp += resList.get(idx).docScores.getDocidScore(id); 
+				tmp += resList.get(idx).docScores.getDocidScore(id);
 			}
-			result.docScores.add(id, (float)(coeff * tmp));
+			result.docScores.add(id, (float) (coeff * tmp));
 		}
 
 		return result;

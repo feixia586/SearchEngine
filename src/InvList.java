@@ -106,12 +106,23 @@ public class InvList {
 		}
 	}
 
+	/**
+	 * Add a posting to the inverted list
+	 * 
+	 * @param posting the posting to be added
+	 */
 	public void add(DocPosting posting) {
 		postings.add(posting);
 		ctf += posting.tf;
 		df++;
 	}
 
+	/**
+	 * get the doc id by its index in inverted list
+	 * 
+	 * @param n the index of the doc in inverted list
+	 * @return the doc id
+	 */
 	public int getDocIDByIndex(int n) {
 		return postings.get(n).docid;
 	}
@@ -193,6 +204,11 @@ class DocPosting {
 		}
 	}
 	
+	/**
+	 * add a term to the posting
+	 * 
+	 * @param pos the position of the term
+	 */
 	public void add(int pos) {
 		positions.add(pos);
 		tf++;

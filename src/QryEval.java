@@ -84,6 +84,8 @@ public class QryEval {
 			System.err.println(usage);
 			System.exit(1);
 		}
+		
+		// init the dls that stores the doc length information
 		dls = new DocLengthStore(READER);
 
 		// read query file
@@ -92,7 +94,7 @@ public class QryEval {
 		Collections.sort(sortedQueryID);
 
 		long startTime = System.currentTimeMillis();
-		// search!!!
+		// begin search!!!
 		for (Integer qID : sortedQueryID) {
 			QryResult result;
 
@@ -107,10 +109,17 @@ public class QryEval {
 		
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		//System.out.println(totalTime);
+		System.out.println(totalTime);
 
 	}
-
+	
+	
+	/**
+	 * read the query file and store queries to a map data structure
+	 * 
+	 * @param queryFilePath the path of query file
+	 * @return the map that stores those queries, map[query_id]->query string
+	 */
 	static Map<Integer, String> getQueries(String queryFilePath) {
 		Map<Integer, String> queries = new HashMap<Integer, String>();
 		try {

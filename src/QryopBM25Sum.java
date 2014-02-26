@@ -56,8 +56,8 @@ public class QryopBM25Sum extends Qryop {
 			}
 			if (iDoc < iSize) {
 				while (iDoc < iSize) {
-					crntResult.docScores.add(result.docScores.getDocid(iDoc),
-							result.docScores.getDocidScore(iDoc));
+					crntResult.docScores.add(iResult.docScores.getDocid(iDoc),
+							iResult.docScores.getDocidScore(iDoc));
 					iDoc++;
 				}
 			}
