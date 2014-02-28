@@ -4,8 +4,13 @@ import java.util.ArrayList;
 
 
 public class QryopWSUM extends Qryop {
+	// weight parameters
 	private List<Double> weight = new ArrayList<Double>();
+
+	// coeff = weight.get(i) / wsum
 	private List<Double> coeff = new ArrayList<Double>();  
+	
+	// wsum is the sum of all the weight parameters
 	private double wsum = 0;
 
 	public QryopWSUM(Qryop... q) {
@@ -44,7 +49,9 @@ public class QryopWSUM extends Qryop {
 			for (int idx = 0; idx < resList.size(); idx++) {
 				score += coeff.get(idx) * Math.exp(resList.get(idx).docScores.getDocidScore(id));
 			}
-			result.docScores.add(id, (float) score);
+			
+			// Remember the score of Indri should be in log space
+			result.docScores.add(id, (float) Math.log(score));
 		}
 
 		return result;

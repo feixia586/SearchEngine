@@ -109,7 +109,10 @@ public class QryParser {
 
 				Qryop arg = currentOp;
 				currentOp = stack.peek();
-				currentOp.add(arg);
+
+				// To avoid stop words
+				if (arg.args.size() > 0)
+					currentOp.add(arg);
 			} else {
 				
 				if (currentOp instanceof QryopWeight){

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.lucene.index.DocsAndPositionsEnum;
+
 public class QryopAnd extends Qryop {
 
 	/**
@@ -99,6 +101,12 @@ public class QryopAnd extends Qryop {
 		return result;
 	}
 
+	/**
+	 * evaluation for Indri #AND operator
+	 * 
+	 * @return QryResult which contains score list
+	 * @throws IOException
+	 */
 	public QryResult eval_Indri() throws IOException {
 		List<QryResult> resList = new ArrayList<QryResult>();
 		for (int i = 0; i < args.size(); i++) {
@@ -109,9 +117,26 @@ public class QryopAnd extends Qryop {
 		QryResult result = new QryResult();
 		double coeff = 1.0 / args.size();
 		int doc_num = QryEval.READER.numDocs();
+		
+		// validation check
+		boolean valid = false;
+		for (int i = 0; i < resList.size(); i++) {
+			if (resList.get(i).docScores.scores.size() != 0)
+				valid = true;
+		}
+		if (!valid) {
+			//System.err.println("Args in Indri #AND should have some results!"); 
+			return result;
+		}
+
+		// go through all the documents, note the score is in log space, so we
+		// can directly add them
 		for (int id = 0; id < doc_num; id++) {
 			double tmp = 0;
 			for (int idx = 0; idx < resList.size(); idx++) {
+				// Note: the docScores.scores.size() shouldn't be always zero
+				if (resList.get(idx).docScores.scores.size() == 0) continue; 
+
 				tmp += resList.get(idx).docScores.getDocidScore(id);
 			}
 			result.docScores.add(id, (float) (coeff * tmp));

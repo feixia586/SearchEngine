@@ -76,6 +76,9 @@ public class QryopScore extends Qryop {
 			}
 
 		} else if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI) {
+			if (result.invertedList.df <= 0) 
+				return result;
+			
 			String field = result.invertedList.field;
 
 			double smo = 0;

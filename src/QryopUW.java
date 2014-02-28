@@ -41,6 +41,8 @@ public class QryopUW extends Qryop {
 			DocPosting postA = resList.get(0).invertedList.postings.get(docIdxs.get(0));
 			int docIDA = postA.docid;
 			int maxDocID = docIDA, MDID_argIdx = 0;
+			
+			// check whether it is the same document
 			for (int i = 1; i < args.size(); i++) {
 				DocPosting postB = resList.get(i).invertedList.postings.get(docIdxs.get(i));
 				int docIDB = postB.docid;
@@ -53,10 +55,14 @@ public class QryopUW extends Qryop {
 				}
 			}
 			
+			// the same doc hasn't been found
 			if (!sameDocFound) {
+				// move all the doc index, except the largest one
 				if (!moveDocIdxs(resList, docIdxs, MDID_argIdx))
 					break;
 			} else {
+				/* the same doc is found */
+
 				List<DocPosting> posts = getCurrentPosts(resList, docIdxs); 
 				List<Integer> locIdxs = new ArrayList<Integer>();
 				for (int i = 0; i < args.size(); i++) locIdxs.add(0); 
@@ -67,6 +73,8 @@ public class QryopUW extends Qryop {
 					int min_loc = posts.get(0).positions.get(locIdxs.get(0));
 					int	max_loc = posts.get(0).positions.get(locIdxs.get(0));
 					int MINL_argIdx = 0;
+					
+					// find out the max location and min location
 					for (int i = 0; i < args.size(); i++) {
 						int crnt_loc = posts.get(i).positions.get(locIdxs.get(i));
 						max_loc = Math.max(max_loc, crnt_loc);
@@ -77,11 +85,14 @@ public class QryopUW extends Qryop {
 						}
 					}
 					
+					// doc found!!
 					if (max_loc - min_loc <= dist) {
 						posting.add(max_loc);
+						// move all the location index
 						if (!moveLocIdxs(posts, locIdxs))
 							break;
 					} else {
+						// move the smallest location index
 						if (!moveLocIdxs(posts, locIdxs, MINL_argIdx))
 							break;
 					}
@@ -90,6 +101,7 @@ public class QryopUW extends Qryop {
 				if (posting.tf > 0)
 					result.invertedList.add(posting);
 				
+				// move all the doc index
 				if (!moveDocIdxs(resList, docIdxs))
 					break;
 			}
@@ -97,7 +109,9 @@ public class QryopUW extends Qryop {
 		
 		return result;
 	}
-	
+
+	// move the smallest location index
+	// return true if the move is OK
 	private boolean moveLocIdxs(List<DocPosting> posts, List<Integer> locIdxs, int MINL_argIdx) {
 		int new_val = locIdxs.get(MINL_argIdx) + 1;
 		if (new_val >= posts.get(MINL_argIdx).tf)
@@ -107,6 +121,8 @@ public class QryopUW extends Qryop {
 		return true;
 	}
 	
+	// move all the location index
+	// return true if the move is OK
 	private boolean moveLocIdxs(List<DocPosting> posts, List<Integer> locIdxs) {
 		for (int i = 0; i < args.size(); i++) {
 			int new_val = locIdxs.get(i) + 1;
