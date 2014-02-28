@@ -18,12 +18,14 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.PriorityQueue;
 
 import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.analysis.TokenStream;
@@ -102,15 +104,56 @@ public class QryEval {
 			Qryop qTree = QryParser.parseQuery(qry);
 			result = qTree.evaluate();
 
-			result.docScores.sortScoresByScore();
+			//if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI)
+				result = refineResult(result);
+			//else
+			//	result.docScores.sortScoresByScore();
+
 			printResults(qID.toString(), result);
 		}
 		FileOp.writeToFile(QryParams.trecEvalOutPath, resStrBld.toString());
 		
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println(totalTime);
+		//System.out.println(totalTime);
 
+	}
+	
+	/**
+	 * Refine the results, get the top 100 documents using priority_queue 
+	 * @param result the original result
+	 * @return the refined result which contains at most 100 documents
+	 */
+	
+	static QryResult refineResult(QryResult result) {
+		QryResult new_result = new QryResult();
+
+		int size = 100;
+		size = Math.min(size, result.docScores.scores.size());
+
+		if (size <= 0) return new_result; 
+
+		Comparator<ScoreListEntry> comp = new ScoreComparator();
+		PriorityQueue<ScoreListEntry> queue = new PriorityQueue<ScoreListEntry>(size, comp);
+		
+		List<ScoreListEntry> lt = result.docScores.scores;
+		for (int i = 0; i < size; i++) {
+			queue.add(lt.get(i));
+		}
+		
+		int total_item = lt.size();
+		for (int i = size; i < total_item; i++) {
+			if (lt.get(i).score > queue.peek().score) {
+				queue.poll();
+				queue.add(lt.get(i));
+			}
+		}
+		
+		while(queue.size() != 0) {
+			new_result.docScores.add_entry(queue.poll());
+		}
+		
+		return new_result;
 	}
 	
 	
