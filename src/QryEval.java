@@ -107,7 +107,7 @@ public class QryEval {
 			//if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI)
 				result = refineResult(result);
 			//else
-			//	result.docScores.sortScoresByScore();
+				result.docScores.sortScoresByScore();
 
 			printResults(qID.toString(), result);
 		}
@@ -115,7 +115,7 @@ public class QryEval {
 		
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		//System.out.println(totalTime);
+		System.out.println(totalTime);
 
 	}
 	
