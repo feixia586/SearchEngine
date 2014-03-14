@@ -1,0 +1,11 @@
+queryFilePath=queries_raw.txt
+indexPath=/media/fei/HDD3T/LargeDataset/index
+trecEvalOutputPath=teOutput.txt
+retrievalAlgorithm=Indri
+BM25:k_1=1.2
+BM25:b=0.5
+BM25:k_3=0
+Indri:mu=2000
+Indri:lambda=0.9
+Indri:smoothing=ctf
+
