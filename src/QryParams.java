@@ -28,6 +28,15 @@ public class QryParams {
 	public static double Indri_lambda = -1;
 	public static SmoothTech Indri_smo = SmoothTech.NONE;
 
+	// query expansion parameters
+	public static boolean QE_fb = false;
+	public static int QE_fbDocs = -1;
+	public static int QE_fbTerms = -1;
+	public static int QE_fbMu = -1;
+	public static double QE_fbOrigWeight = -1;
+	public static String QE_fbInitialRankingFile = null;
+	public static String QE_fbExpansionQueryFile = null;
+
 	public static void parseParameterFile(String filePath) {
 		// read in the parameter file; one parameter per line in format of
 		// key=value
@@ -60,6 +69,8 @@ public class QryParams {
 		queryFilePath = params.get("queryFilePath");
 		indexPath = params.get("indexPath");
 		trecEvalOutPath = params.get("trecEvalOutputPath");
+
+		// get the retrieval algorithm and relative parameters
 		if (params.get("retrievalAlgorithm")
 				.equalsIgnoreCase("UnrankedBoolean"))
 			retrievalAlgm = RetrievalAlgorithm.UNRANKEDBOOLEAN;
@@ -96,6 +107,25 @@ public class QryParams {
 		} else {
 			System.err.println("Error: unidentified retrieval algorithm.");
 			System.exit(1);
+		}
+
+		// get query expansion algorithm parameters
+		if (params.get("fb") != null
+				&& params.get("fb").equalsIgnoreCase("true")) {
+			QE_fb = true;
+			QE_fbDocs = Integer.parseInt(params.get("fbDocs"));
+			QE_fbTerms = Integer.parseInt(params.get("fbTerms"));
+			QE_fbMu = Integer.parseInt(params.get("fbMu"));
+			QE_fbOrigWeight = Double.parseDouble(params.get("fbOrigWeight"));
+			QE_fbInitialRankingFile = params.get("fbInitialRankingFile");
+			QE_fbExpansionQueryFile = params.get("fbExpansionQueryFile");
+
+			// validation check
+			if (QE_fbDocs <= 0 || QE_fbTerms <= 0 || QE_fbMu < 0
+					|| (QE_fbOrigWeight < 0 || QE_fbOrigWeight > 1)) {
+				System.err.println("Error: invalid parameters in: Query Expansion");
+				System.exit(1);
+			}
 		}
 	}
 }
