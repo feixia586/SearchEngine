@@ -35,6 +35,8 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 
 public class QryEval {
 
@@ -55,11 +57,10 @@ public class QryEval {
 		analyzer.setStopwordRemoval(true);
 		analyzer.setStemmer(EnglishAnalyzerConfigurable.StemmerType.KSTEM);
 	}
-	
-	public static DocLengthStore dls;
-	
-	private static StringBuilder resStrBld = new StringBuilder();
 
+	public static DocLengthStore dls;
+
+	private static StringBuilder resStrBld = new StringBuilder();
 
 	/**
 	 * @param args
@@ -86,7 +87,7 @@ public class QryEval {
 			System.err.println(usage);
 			System.exit(1);
 		}
-		
+
 		// init the dls that stores the doc length information
 		dls = new DocLengthStore(READER);
 
@@ -96,71 +97,164 @@ public class QryEval {
 		Collections.sort(sortedQueryID);
 
 		long startTime = System.currentTimeMillis();
+
+		// read the feedback initial ranking file, might be used later
+		Map<Integer, QryResult> initRankResult = null;
+		if (QryParams.QE_fb && QryParams.QE_fbInitialRankingFile != null) {
+			initRankResult = readResultFromFile(QryParams.QE_fbInitialRankingFile);
+		}
+		// the expanded queries, might be used later
+		StringBuilder expandedQries = new StringBuilder();
+		StringBuilder combinedQries = new StringBuilder();
+
 		// begin search!!!
 		for (Integer qID : sortedQueryID) {
 			QryResult result;
 
 			String qry = queries.get(qID);
-			Qryop qTree = QryParser.parseQuery(qry);
-			result = qTree.evaluate();
+			if (QryParams.QE_fb == false) {
+				Qryop qTree = QryParser.parseQuery(qry);
+				result = qTree.evaluate();
+			} else {
+				if (QryParams.QE_fbInitialRankingFile != null) {
+					assert (initRankResult != null);
+					result = initRankResult.get(qID);
 
-			//if (QryParams.retrievalAlgm == RetrievalAlgorithm.INDRI)
-				result = refineResult(result);
-			//else
-				result.docScores.sortScoresByScore();
+				} else {
+					Qryop qTree = QryParser.parseQuery(qry);
+					result = qTree.evaluate();
+				}
+
+				QryExpander qryExpander = new QryExpander();
+				// get expanded query
+				String Ex_qry = qryExpander.expandQuery(result);
+				expandedQries.append(qID + ": " + Ex_qry + "\n");
+
+				// get combined query
+				String Com_qry = qryExpander.combineQuery(qry, Ex_qry);
+				combinedQries.append(qID + ": " + Com_qry + "\n");
+
+				Qryop qTree = QryParser.parseQuery(Com_qry);
+				result = qTree.evaluate();
+			}
+
+			result = refineResult(result, 100);
+			// result.docScores.sortScoresByScore();
 
 			printResults(qID.toString(), result);
 		}
 		FileOp.writeToFile(QryParams.trecEvalOutPath, resStrBld.toString());
-		
+		if (QryParams.QE_fb && QryParams.QE_fbExpansionQueryFile != null) {
+			FileOp.writeToFile(QryParams.QE_fbExpansionQueryFile,
+					expandedQries.toString());
+			FileOp.writeToFile(QryParams.QE_fbExpansionQueryFile + "com",
+					combinedQries.toString());
+		}
+
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);
-
 	}
-	
+
 	/**
-	 * Refine the results, get the top 100 documents using priority_queue 
-	 * @param result the original result
-	 * @return the refined result which contains at most 100 documents
+	 * Refine the results, get the top documents using priority_queue. Note:
+	 * They are ranked in descending order!
+	 * 
+	 * @param result
+	 *            the original result
+	 * @param n
+	 *            the number of document that would be returned at most
+	 * @return the refined result which contains at most n documents
 	 */
-	
-	static QryResult refineResult(QryResult result) {
+
+	static QryResult refineResult(QryResult result, int n) {
 		QryResult new_result = new QryResult();
 
-		int size = 100;
-		size = Math.min(size, result.docScores.scores.size());
+		int size = Math.min(n, result.docScores.scores.size());
 
-		if (size <= 0) return new_result; 
+		if (size <= 0)
+			return new_result;
 
 		Comparator<ScoreListEntry> comp = new ScoreComparator();
-		PriorityQueue<ScoreListEntry> queue = new PriorityQueue<ScoreListEntry>(size, comp);
-		
+		PriorityQueue<ScoreListEntry> queue = new PriorityQueue<ScoreListEntry>(
+				size, comp);
+
 		List<ScoreListEntry> lt = result.docScores.scores;
 		for (int i = 0; i < size; i++) {
 			queue.add(lt.get(i));
 		}
-		
+
 		int total_item = lt.size();
 		for (int i = size; i < total_item; i++) {
-			if (lt.get(i).score > queue.peek().score) {
+			if (comp.compare(lt.get(i), queue.peek()) > 0) {
 				queue.poll();
 				queue.add(lt.get(i));
 			}
 		}
-		
-		while(queue.size() != 0) {
-			new_result.docScores.add_entry(queue.poll());
+
+		// use a stack to reverse the order
+		Stack<ScoreListEntry> stk = new Stack<ScoreListEntry>();
+		while (queue.size() != 0) {
+			stk.push(queue.poll());
 		}
-		
+		while (stk.size() != 0) {
+			new_result.docScores.add_entry(stk.pop());
+		}
+
 		return new_result;
 	}
-	
-	
+
+	/**
+	 * Read a document ranking from the feedback initial ranking file.
+	 * 
+	 * @param filepath
+	 *            the file path
+	 * @return a HashMap from queryID to QryResult
+	 * @throws Exception
+	 */
+	static Map<Integer, QryResult> readResultFromFile(String filepath)
+			throws Exception {
+		Map<Integer, QryResult> initRankResult = new HashMap<Integer, QryResult>();
+		Map<Integer, ArrayList<String>> queryResStr = new HashMap<Integer, ArrayList<String>>();
+
+		String content = FileOp.readFromFile(filepath);
+		String[] lines = content.split("\n");
+
+		// construct the queryResStr
+		for (int i = 0; i < lines.length; i++) {
+			int idx = lines[i].indexOf(" ");
+			int queryID = Integer.parseInt(lines[i].substring(0, idx));
+			String resultStr = lines[i].substring(idx + 1).trim();
+			if (queryResStr.get(queryID) == null) {
+				queryResStr.put(queryID, new ArrayList<String>());
+				queryResStr.get(queryID).add(resultStr);
+			} else {
+				queryResStr.get(queryID).add(resultStr);
+			}
+		}
+
+		// construct the initRankResult based on queryResStr
+		for (Integer key : queryResStr.keySet()) {
+			ArrayList<String> resList = queryResStr.get(key);
+			QryResult result = new QryResult();
+			for (int i = 0; i < resList.size(); i++) {
+				String[] items = resList.get(i).split(" ");
+				String externalID = items[1];
+				int internalID = getInternalDocid(READER, externalID);
+				double score = Double.parseDouble(items[3]);
+				result.docScores.add(internalID, (float) score);
+			}
+			initRankResult.put(key, result);
+		}
+
+		return initRankResult;
+	}
+
 	/**
 	 * read the query file and store queries to a map data structure
 	 * 
-	 * @param queryFilePath the path of query file
+	 * @param queryFilePath
+	 *            the path of query file
 	 * @return the map that stores those queries, map[query_id]->query string
 	 */
 	static Map<Integer, String> getQueries(String queryFilePath) {
@@ -208,6 +302,36 @@ public class QryEval {
 	}
 
 	/**
+	 * Finds the internal document id for a document specified by its external
+	 * id, e.g. clueweb09-enwp00-88-09710. If no such document exists, it throws
+	 * an exception. Note that the lucene indexer added "_0" to the end of each
+	 * external document id, so that suffix is added to the externalId before
+	 * the internal id is fetched.
+	 * 
+	 * @param externalId
+	 * @return Internal doc id of lucene suitable for finding document vectors
+	 *         etc.
+	 * @throws Exception
+	 */
+	static int getInternalDocid(IndexReader READER, String externalId)
+			throws Exception {
+
+		// add _0 to account for how ids were indexed by lucene indexer
+		Query q = new TermQuery(new Term("externalId", externalId + "_0"));
+
+		IndexSearcher searcher = new IndexSearcher(READER);
+		TopScoreDocCollector collector = TopScoreDocCollector.create(1, false);
+		searcher.search(q, collector);
+		ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+		if (hits.length < 1) {
+			throw new Exception("External id not found.");
+		} else {
+			return hits[0].doc;
+		}
+	}
+
+	/**
 	 * Print the query results.
 	 * 
 	 * THIS IS NOT THE CORRECT OUTPUT FORMAT. YOU MUST CHANGE THIS METHOD SO
@@ -231,7 +355,7 @@ public class QryEval {
 			for (int i = 0; i < result.docScores.scores.size(); i++) {
 				if (i >= 100)
 					break;
-				
+
 				StringBuilder strBld = new StringBuilder(queryID);
 				strBld.append("\tQ0\t")
 						.append(getExternalDocid(result.docScores.getDocid(i)))
