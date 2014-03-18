@@ -147,13 +147,15 @@ public class QryEval {
 		if (QryParams.QE_fb && QryParams.QE_fbExpansionQueryFile != null) {
 			FileOp.writeToFile(QryParams.QE_fbExpansionQueryFile,
 					expandedQries.toString());
-			FileOp.writeToFile(QryParams.QE_fbExpansionQueryFile + "com",
-					combinedQries.toString());
+			//FileOp.writeToFile(QryParams.QE_fbExpansionQueryFile + "com",
+			//		combinedQries.toString());
 		}
 
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);
+		
+		Script.finalMeasure();
 	}
 
 	/**

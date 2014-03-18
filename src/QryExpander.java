@@ -54,7 +54,8 @@ public class QryExpander {
 					_df.put(term, _df.get(term) + 1);
 				}
 			}
-
+			
+			//_termLength += tv.positionsLength();
 		}
 	}
 
@@ -182,6 +183,7 @@ public class QryExpander {
 
 		int total_item = lt.size();
 		for (int i = size; i < total_item; i++) {
+			// use the compare function define the comparator to do comparison
 			if (comp.compare(lt.get(i), que.peek()) > 0) {
 				que.poll();
 				que.add(lt.get(i));
@@ -200,6 +202,13 @@ public class QryExpander {
 		return entries;
 	}
 
+	/**
+	 * Get top n weighted term entry List
+	 * 
+	 * @param termWeights the map of term to its weight 
+	 * @param n the size
+	 * @return top n weighted term entry list
+	 */
 	public List<Entry<String, Float>> getTopWeightedTerms(
 			Map<String, Float> termWeights, int n) {
 		List<Entry<String, Float>> topWeightedTerms = new ArrayList<Entry<String, Float>>();
@@ -212,11 +221,12 @@ public class QryExpander {
 		PriorityQueue<Entry<String, Float>> que = new PriorityQueue<Map.Entry<String, Float>>(
 				size, comp);
 
+		// build the min-root heap data structure
 		Iterator<Entry<String, Float>> it = termWeights.entrySet().iterator();
 		int i = 0;
 		while (it.hasNext()) {
 			Entry<String, Float> entry = it.next();
-			if (isTermValid(entry)) {
+			if (isTermValid(entry)) { // check if the term is valid
 				que.add(entry);
 				if (++i >= size)
 					break;
@@ -225,6 +235,7 @@ public class QryExpander {
 
 		while (it.hasNext()) {
 			Entry<String, Float> entry = it.next();
+			// note that we need to check whether this term is valid
 			if (comp.compare(entry, que.peek()) > 0 && isTermValid(entry)) {
 				que.poll();
 				que.add(entry);
@@ -240,6 +251,7 @@ public class QryExpander {
 			topWeightedTerms.add(stk.pop());
 		}
 
+		// do weight normalization
 		normalizeWeight(topWeightedTerms);
 
 		return topWeightedTerms;
@@ -275,7 +287,7 @@ public class QryExpander {
 	}
 
 	/**
-	 * Normalize the term weight entries
+	 * Normalize the term weight entries. Note that individual values should be non-negative
 	 * 
 	 * @param weightEntries
 	 *            the weight entries to be normalized
@@ -283,6 +295,7 @@ public class QryExpander {
 	private void normalizeWeight(List<Entry<String, Float>> weightEntries) {
 		float sum = 0;
 		for (Entry<String, Float> entry : weightEntries) {
+			assert(entry.getValue() >= 0);
 			sum += entry.getValue();
 		}
 
