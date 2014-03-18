@@ -11,7 +11,7 @@ Indri:smoothing=ctf
 fb=true
 fbDocs=10
 fbTerms=10
-fbMu=0
+fbMu=10000
 fbOrigWeight=0.5
 fbExpansionQueryFile=queries_expanded.txt
-fbInitialRankingFile=Indri-Bow.teIn
+
