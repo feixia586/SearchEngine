@@ -155,7 +155,10 @@ public class QryEval {
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);
 		
-		Script.finalMeasure();
+		// automatically upload the retrieval results to the server
+		// and get the evaluation back
+		// and present the evaluation in better format
+		// Script.finalMeasure();
 	}
 
 	/**
@@ -399,99 +402,3 @@ public class QryEval {
 		return tokens.toArray(new String[tokens.size()]);
 	}
 }
-
-// DocLengthStore s = new DocLengthStore(READER);
-//
-// /*
-// * The code below is an unorganized set of examples that show you
-// * different ways of accessing the index. Some of these are only useful
-// * in HW2 or HW3.
-// */
-//
-// // Lookup the document length of the body field of doc 0.
-// System.out.println(s.getDocLength("body", 0));
-//
-// // How to use the term vector.
-// //TermVector tv = new TermVector(1, "body");
-// //System.out.println(tv.stemString(100)); // get the string for the 100th
-// // // stem
-// //System.out.println(tv.stemDf(100)); // get its df
-// //System.out.println(tv.totalStemFreq(100)); // get its ctf
-//
-// /**
-// * The index is open. Start evaluating queries. The examples below show
-// * the query tree that should be created for each query.
-// *
-// * The general pattern is to tokenize the query term (so that it gets
-// * converted to lowercase, stopped, stemmed, etc), create a Term node to
-// * fetch the inverted list, create a Score node to convert an inverted
-// * list to a score list, evaluate the query, and print results.
-// *
-// * Modify this section so that you read a query from a file, parse it,
-// * and form the query tree automatically.
-// */
-//
-// // A one-word query.
-// printResults("pea", (new QryopScore(new QryopTerm(
-// tokenizeQuery("a")[0]))).evaluate());
-//
-// // A two-word query.
-// printResults("#AND (broccoli cauliflower)", (new QryopAnd(
-// new QryopTerm(tokenizeQuery("broccoli")[0]), new QryopTerm(
-// tokenizeQuery("cauliflower")[0]))).evaluate());
-//
-// // A more complex query.
-// printResults("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
-// (new QryopAnd(new QryopTerm(tokenizeQuery("asparagus")[0]),
-// new QryopTerm(tokenizeQuery("broccoli")[0]),
-// new QryopTerm(tokenizeQuery("cauliflower")[0]),
-// new QryopSyn(
-// new QryopTerm(tokenizeQuery("peapods")[0]),
-// new QryopTerm(tokenizeQuery("peas")[0]))))
-// .evaluate());
-//
-// // A different way to create the previous query. This doesn't use
-// // a stack, but it may make it easier to see how you would parse a
-// // query with a stack-based architecture.
-// Qryop op1 = new QryopAnd();
-// op1.add(new QryopTerm(tokenizeQuery("asparagus")[0]));
-// op1.add(new QryopTerm(tokenizeQuery("broccoli")[0]));
-// op1.add(new QryopTerm(tokenizeQuery("cauliflower")[0]));
-// Qryop op2 = new QryopSyn();
-// op2.add(new QryopTerm(tokenizeQuery("peapods")[0]));
-// op2.add(new QryopTerm(tokenizeQuery("peas")[0]));
-// op1.add(op2);
-// printResults("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
-// op1.evaluate());
-//
-// // Using the example query parser. Notice that this does no
-// // lexical processing of query terms. Add that to the query
-// // parser.
-// Qryop qTree;
-// qTree = parseQuery("apple.test pie-boy");
-// printResults("apple pie", qTree.evaluate());
-//
-// /*
-// * Create the trec_eval output. Your code should write to the file
-// * specified in the parameter file, and it should write the results that
-// * you retrieved above. This code just allows the testing infrastructure
-// * to work on QryEval.
-// */
-// BufferedWriter writer = null;
-//
-// try {
-// writer = new BufferedWriter(new FileWriter(new File("teval.in")));
-//
-// writer.write("1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1");
-// writer.write("1 Q0 clueweb09-enwp01-58-04573 2 0.9 run-1");
-// writer.write("1 Q0 clueweb09-enwp01-24-11888 3 0.8 run-1");
-// writer.write("2 Q0 clueweb09-enwp00-70-20490 1 0.9 run-1");
-// } catch (Exception e) {
-// e.printStackTrace();
-// } finally {
-// try {
-// writer.close();
-// } catch (Exception e) {
-// }
-// }
-//

@@ -32,9 +32,10 @@ public class Script {
 	public static List<Integer> allStat = new ArrayList<Integer>(Arrays.asList(
 			849, 851, 852, 832));
 
-	public static void main(String[] args) {
-		finalMeasure();
-	}
+	//public static void main(String[] args) {
+	//	finalMeasure();
+	//}
+
 	/**
 	 * print final pretty measurement for the experiment
 	 */

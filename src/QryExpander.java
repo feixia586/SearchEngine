@@ -59,6 +59,13 @@ public class QryExpander {
 		}
 	}
 
+	/**
+	 * expand the query based on result
+	 * 
+	 * @param result the initial retrieval results
+	 * @return the expanded query
+	 * @throws Exception
+	 */
 	public String expandQuery(QryResult result) throws Exception {
 		List<ScoreListEntry> topEntries = getTopEntries(result,
 				QryParams.QE_fbDocs);
@@ -70,6 +77,7 @@ public class QryExpander {
 		List<Entry<String, Float>> topWeightedTerms = getTopWeightedTerms(
 				termWeight, QryParams.QE_fbTerms);
 
+		// construct the expanded query
 		StringBuilder Ex_qry = new StringBuilder("#WEIGHT(");
 		for (int i = 0; i < topWeightedTerms.size(); i++) {
 			Entry<String, Float> entry = topWeightedTerms.get(i);
@@ -81,6 +89,12 @@ public class QryExpander {
 		return Ex_qry.toString();
 	}
 
+	/**
+	 * combine expanded query and original query
+	 * @param original the original query
+	 * @param expended the expanded query
+	 * @return the combined query
+	 */
 	public String combineQuery(String original, String expended) {
 		StringBuilder combinedQry = new StringBuilder("#WEIGHT(");
 
@@ -93,6 +107,12 @@ public class QryExpander {
 		return combinedQry.toString();
 	}
 
+	/**
+	 * calculate the term weight
+	 * @param entries the list of ScoreListEntry
+	 * @return a map from term to its weight
+	 * @throws Exception
+	 */
 	public Map<String, Float> calcTermWeight(List<ScoreListEntry> entries)
 			throws Exception {
 		int size = entries.size();
@@ -136,6 +156,13 @@ public class QryExpander {
 
 	}
 
+	/**
+	 * calculate smoothing score of the stem
+	 * 
+	 * @param stem
+	 * @param size the number of documents
+	 * @return the smoothing term
+	 */
 	private float calcSmoScore(String stem, int size) {
 		float smo = 0;
 
