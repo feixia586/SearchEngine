@@ -1,4 +1,4 @@
-queryFilePath=queries_sdm.txt
+queryFilePath=queries_raw.txt
 indexPath=/media/fei/HDD3T/LargeDataset/index
 trecEvalOutputPath=teOutput.txt
 retrievalAlgorithm=Indri
