@@ -1,4 +1,4 @@
-queryFilePath=queries_raw.txt
+queryFilePath=queries_sdm.txt
 indexPath=/media/fei/HDD3T/LargeDataset/index
 trecEvalOutputPath=teOutput.txt
 retrievalAlgorithm=Indri
@@ -9,9 +9,8 @@ Indri:mu=2000
 Indri:lambda=0.9
 Indri:smoothing=ctf
 fb=true
-fbDocs=10
-fbTerms=10
+fbDocs=20
+fbTerms=50
 fbMu=10000
-fbOrigWeight=0.5
+fbOrigWeight=0.8
 fbExpansionQueryFile=queries_expanded.txt
-
