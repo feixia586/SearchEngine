@@ -1,0 +1,1 @@
+perl fetchUrl.perl > newRes

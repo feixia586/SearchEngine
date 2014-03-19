@@ -1,0 +1,30 @@
+1:#and(obama #near/2(family tree))  0.7896  1:#or(#and(obama #near/2(family tree)) #and(obama.title family.title tree.title) #and(obama.keywords family.keywords tree.keywords))
+2:#and(french lick #syn(resort and casino))  0.6725
+6:kcs 0.6760  6:#or(kcs kcs.url kcs.title kcs.inlink kcs.keywords)
+7:#or(#near/30(air travel) travel.title travel.keywords #near/2(travel information))  0.2486
+15:#or(#and(espn sports) espn.url) 0.6396
+16:#or(#and(arizona.keywords game.keywords and.keywords fish.keywords) #near/2(arizona game and fish)) 0.5262
+17:#near/1(poker tournaments) 	0.5030  17:#or(#near/1(poker tournaments) #and(poker.title tournaments.title) #and(poker.keywords tournaments.keywords))
+18:#and(wedding.keywords wedding.title #or(budget calculator)) 1.00 clueweb09-enwp03-21-19882
+21:volvo 0.6280  21:#or(volvo volvo.title volvo.url volvo.keywords volvo.inlink)
+25:euclid 0.5059  25:#or(euclid euclid.title euclid.keywords)
+26:#and(lower #near/1(heart rate)) 0.2879
+29:#near/2(ps 2 games)  0 no related
+31:atari 0.7984  31:#or(atari atari.url atari.title atari.keywords atari.inlink)
+32:#and(#near/3(website hosting) #near/3(website design)) 0.1799
+36:gps 0.9921   36:#or(gps gps.title gps.keywords)
+37:#near/1(pampered.keywords chef.keywords)  0.2000  clueweb09-enwp01-43-21033
+38:#and(dogs for adoption) 0.5380
+39:#or(#near/25(disneyland hotel) #near/30(hotel disneyland) #and(disneyland.title hotel.title) #and(disneyland.keywords hotel.keywords))  0.6984
+41:#and(#near/1(orange county) convention center) 0.5739
+42:#and(the #near/2(music man)) 0.5071
+46:#and(alexian brothers hospital) 1.0000
+54:#and(president of the #near/2(united states)) 0.4756 54:#or(#and(president of the #near/2(united states)) #and(president.title united.title states.title) #and(president.keywords united.keywords states.keywords))
+56:#or(#near/1(uss yorktown) #near/1(charleston sc)) 0.6022
+59:#or(#and(how to build a fence) fence.title #near/1(a fence))  1.0000   clueweb09-enwp00-75-07343
+62:#and(texas border patrol) 0.9410  62:#or(#and(texas border patrol) #and(texas.title border.title patrol.title))
+73:#and(neil young) 0.8374
+80:#and(keyboard.keywords #near/4(keyboards reviews)) 0.7721
+82:joints.keywords 0.2490
+91:#or(#and(er tv show) er.title er.keywords) 0.8199
+97:#near/1(south africa) 0.4879  97:#or(#near/1(south africa) #and(south.title africa.title) #and(south.keywords africa.keywords))
